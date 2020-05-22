@@ -8,7 +8,7 @@
       ref="container"
     >
       <div
-        class="msm-logo"
+        class="msm-logo__logo"
         ref="logo"
       >
         <svg
@@ -31,7 +31,18 @@
         ref="text"
       >
         <msm-text />
-        <!-- <img src="../assets/msm-text.svg"> -->
+      </div>
+
+      <div
+        class="msm-logo__scroll-indicator"
+        ref="scrollIndicator"
+      >
+        <i
+          v-for="(_, index) in [0,0,0]"
+          :key="index"
+        >
+          ▽
+        </i>
       </div>
     </div>
   </section>
@@ -88,17 +99,38 @@ export default {
     this.elements = Array.from(logo.children);
     this.timeline = this.createTimeline();
 
+    this.animateScrollIndicator();
+
     window.addEventListener('scroll', this.progressTimeline.bind(this));
   },
   methods: {
+    animateScrollIndicator() {
+      let scrollIndicators = this.$refs.scrollIndicator.querySelectorAll('i');
+
+      return gsap
+        .timeline({ repeat: -1 })
+        .to(null, { duration: 1.5 })
+        .to(scrollIndicators, {
+          y: 20,
+          stagger: 0.1,
+          duration: 0.4,
+          ease: 'power1.in',
+        })
+        .to(scrollIndicators, {
+          y: 0,
+          stagger: 0.1,
+          duration: 0.4,
+          ease: 'power1.out',
+          delay: -0.2,
+        });
+    },
     createTimeline() {
-      let { section, container, logo, text } = this.$refs;
+      let { section, container, logo, text, scrollIndicator } = this.$refs;
       let characters = this.$refs.text.querySelectorAll('path');
       let scale = section.offsetWidth / logo.offsetWidth + 3;
       let { x, y } = logo.getBoundingClientRect();
 
       gsap.set(characters, { opacity: 0 });
-
       gsap.set(logo, {
         x: (container.offsetWidth - logo.offsetWidth - x) / 2,
         y: (container.offsetHeight - logo.offsetHeight - y) / 2,
@@ -112,15 +144,18 @@ export default {
         });
       });
 
+      let hideScrollIndicator = () =>
+        gsap.timeline().to(scrollIndicator, { opacity: 0, duration: 0.1 });
+
       let morphToDonk = () =>
         gsap
           .timeline()
           .addLabel('start')
-          .to(this.elements[4], { x: 0, y: -50, scale: 0.3 }, 'start')
-          .to(this.elements[3], { x: 30, y: 30, scale: 0.3 }, 'start')
-          .to(this.elements[2], { x: -45, y: -15, scale: 0.25 }, 'start')
-          .to(this.elements[1], { x: -30, y: 35, scale: 0.25 }, 'start')
-          .to(this.elements[0], { x: 45, y: -20, scale: 0.2 }, 'start')
+          .to(this.elements[4], { x: 0, y: -50, scale: 0.55 }, 'start')
+          .to(this.elements[3], { x: 30, y: 30, scale: 0.55 }, 'start')
+          .to(this.elements[2], { x: -45, y: -15, scale: 0.4 }, 'start')
+          .to(this.elements[1], { x: -30, y: 35, scale: 0.4 }, 'start')
+          .to(this.elements[0], { x: 45, y: -20, scale: 0.35 }, 'start')
           .to(this.elements, { opacity: 1, rotate: 0 }, 'start');
 
       let rotateDonk = () =>
@@ -134,22 +169,26 @@ export default {
       let morphToLogo = () => {
         return gsap
           .timeline()
-          .to(this.elements, { scale: 1, x: 0, y: 0 })
-          .to(logo, { x: 0, y: 0, ease: 'sine.inOut' });
+          .addLabel('start')
+          .to(this.elements, { scale: 1, x: 0, y: 0 }, 'start')
+          .to(logo, { x: 0, y: 0, ease: 'sine.inOut' }, 'start');
       };
 
       let fadeInText = () =>
         gsap.timeline().to(characters, {
           opacity: 1,
-          stagger: 0.05,
+          stagger: 0.008,
+          duration: 0.2,
         });
 
       return gsap
         .timeline({ paused: true })
-        .add(morphToDonk())
+        .addLabel('start')
+        .add(hideScrollIndicator(), 'start')
+        .add(morphToDonk(), 'start')
         .add(rotateDonk())
         .add(morphToLogo())
-        .add(fadeInText());
+        .add(fadeInText(), '-=0.1');
     },
     progressTimeline() {
       let scrollTop = document.documentElement.scrollTop;
@@ -161,16 +200,17 @@ export default {
 };
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
 .msm-logo {
-  width: 90px;
-  height: 90px;
-  position: relative;
+  &__logo {
+    width: 90px;
+    height: 90px;
+    position: relative;
 
-  > svg {
-    position: absolute;
-    width: 100%;
+    > svg {
+      position: absolute;
+      width: 100%;
+    }
   }
 
   &__text {
@@ -182,9 +222,34 @@ export default {
     }
   }
 
+  &__scroll-indicator {
+    align-items: center;
+    color: white;
+    display: flex;
+    font-size: 3rem;
+    height: 3rem;
+    justify-content: center;
+    left: 50%;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    user-select: none;
+    width: 3rem;
+
+    i {
+      position: absolute;
+      font-style: normal;
+      opacity: 0.4;
+
+      &:first-of-type {
+        opacity: 0.8;
+      }
+    }
+  }
+
   &__section {
     width: 100vw;
-    height: 500vh;
+    height: 300vh;
     position: relative;
   }
 

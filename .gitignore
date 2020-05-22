@@ -21,3 +21,4 @@ yarn-error.log*
 *.sw?
 .firebaserc
 .firebase/
+firebase-debug.log
