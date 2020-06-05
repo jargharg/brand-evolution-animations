@@ -32,25 +32,16 @@
       >
         <msm-text />
       </div>
-
-      <div
-        class="msm-logo__scroll-indicator"
-        ref="scrollIndicator"
-      >
-        <i
-          v-for="(_, index) in [0,0,0]"
-          :key="index"
-        >
-          ▽
-        </i>
-      </div>
     </div>
   </section>
 </template>
 
 <script>
-import gsap from 'gsap';
 import MsmText from './MsmText';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 export default {
   components: {
@@ -98,34 +89,10 @@ export default {
     this.timelineHeight = section.scrollHeight - container.scrollHeight;
     this.elements = Array.from(logo.children);
     this.timeline = this.createTimeline();
-
-    this.animateScrollIndicator();
-
-    window.addEventListener('scroll', this.progressTimeline.bind(this));
   },
   methods: {
-    animateScrollIndicator() {
-      let scrollIndicators = this.$refs.scrollIndicator.querySelectorAll('i');
-
-      return gsap
-        .timeline({ repeat: -1 })
-        .to(null, { duration: 1.5 })
-        .to(scrollIndicators, {
-          y: 20,
-          stagger: 0.1,
-          duration: 0.4,
-          ease: 'power1.in',
-        })
-        .to(scrollIndicators, {
-          y: 0,
-          stagger: 0.1,
-          duration: 0.4,
-          ease: 'power1.out',
-          delay: -0.2,
-        });
-    },
     createTimeline() {
-      let { section, container, logo, text, scrollIndicator } = this.$refs;
+      let { section, container, logo, text } = this.$refs;
       let characters = this.$refs.text.querySelectorAll('path');
       let scale = section.offsetWidth / logo.offsetWidth + 3;
       let { x, y } = logo.getBoundingClientRect();
@@ -144,35 +111,45 @@ export default {
         });
       });
 
-      let hideScrollIndicator = () =>
-        gsap.timeline().to(scrollIndicator, { opacity: 0, duration: 0.1 });
-
       let morphToDonk = () =>
         gsap
-          .timeline()
+          .timeline({
+            paused: true,
+            scrollTrigger: {
+              trigger: '.msm-logo__section',
+              id: 'morphToDonk',
+              start: '0%',
+              end: '40%',
+              scrub: 1,
+              markers: true,
+            },
+          })
           .addLabel('start')
           .to(this.elements[4], { x: 0, y: -50, scale: 0.55 }, 'start')
-          .to(this.elements[3], { x: 30, y: 30, scale: 0.55 }, 'start')
+          .to(this.elements[3], { x: 27, y: 30, scale: 0.55 }, 'start')
           .to(this.elements[2], { x: -45, y: -15, scale: 0.4 }, 'start')
-          .to(this.elements[1], { x: -30, y: 35, scale: 0.4 }, 'start')
+          .to(this.elements[1], { x: -27, y: 34, scale: 0.4 }, 'start')
           .to(this.elements[0], { x: 45, y: -20, scale: 0.35 }, 'start')
-          .to(this.elements, { opacity: 1, rotate: 0 }, 'start');
+          .to(this.elements, { rotate: 0 }, 'start')
+          .to(this.elements, { opacity: 1 }, 'start+=0.2');
 
       let rotateDonk = () =>
         gsap
-          .timeline()
+          .timeline({
+            repeat: 2,
+            scrollTrigger: {
+              trigger: '.msm-logo__section',
+              id: 'rotateDonk',
+              start: '28%',
+              end: '70%',
+              markers: true,
+              scrub: 1,
+            },
+          })
           .addLabel('start')
-          .to(logo, { rotate: 360, ease: 'sine.inOut' }, 'start')
-          .to(this.elements, { rotate: -360, ease: 'sine.inOut' }, 'start')
+          .to(logo, { rotate: 360, ease: 'linear' }, 'start')
+          .to(this.elements, { rotate: -360, ease: 'linear' }, 'start')
           .set(this.elements, { rotate: 0 });
-
-      let morphToLogo = () => {
-        return gsap
-          .timeline()
-          .addLabel('start')
-          .to(this.elements, { scale: 1, x: 0, y: 0 }, 'start')
-          .to(logo, { x: 0, y: 0, ease: 'sine.inOut' }, 'start');
-      };
 
       let fadeInText = () =>
         gsap.timeline().to(characters, {
@@ -181,20 +158,29 @@ export default {
           duration: 0.2,
         });
 
-      return gsap
-        .timeline({ paused: true })
-        .addLabel('start')
-        .add(hideScrollIndicator(), 'start')
-        .add(morphToDonk(), 'start')
-        .add(rotateDonk())
-        .add(morphToLogo())
-        .add(fadeInText(), '-=0.1');
-    },
-    progressTimeline() {
-      let scrollTop = document.documentElement.scrollTop;
-      let progress = scrollTop / this.timelineHeight;
+      let morphToLogo = () =>
+        gsap
+          .timeline({
+            paused: true,
+            scrollTrigger: {
+              trigger: '.msm-logo__section',
+              id: 'morphToLogo',
+              start: '65%',
+              end: '100%',
+              scrub: 1,
+              markers: true,
+            },
+          })
+          .addLabel('start')
+          .to(this.elements, { scale: 1, x: 0, y: 0 }, 'start')
+          .to(logo, { x: 0, y: 0, ease: 'sine.inOut' }, 'start')
+          .add(fadeInText(), '-=0.1');
 
-      this.timeline.progress(progress);
+      return gsap
+        .timeline()
+        .add(morphToDonk())
+        .add(rotateDonk())
+        .add(morphToLogo());
     },
   },
 };
@@ -222,45 +208,20 @@ export default {
     }
   }
 
-  &__scroll-indicator {
-    align-items: center;
-    color: white;
-    display: flex;
-    font-size: 3rem;
-    height: 3rem;
-    justify-content: center;
-    left: 50%;
-    position: absolute;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    user-select: none;
-    width: 3rem;
-
-    i {
-      position: absolute;
-      font-style: normal;
-      opacity: 0.4;
-
-      &:first-of-type {
-        opacity: 0.8;
-      }
-    }
-  }
-
-  &__section {
-    width: 100vw;
-    height: 300vh;
-    position: relative;
-  }
-
   &__container {
     width: 100vw;
-    position: sticky;
-    top: 0;
     height: 100vh;
     overflow: hidden;
     display: flex;
     padding: 1rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+  }
+
+  &__section {
+    width: 100vw;
+    height: 100vh;
   }
 }
 </style>

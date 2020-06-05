@@ -1,17 +1,23 @@
 <template>
   <section>
     <MsmLogo />
+    <ScrollIndicator />
+    <Content />
   </section>
 </template>
 
 <script>
 import MsmLogo from './components/MsmLogo.vue';
+import Content from './components/Content.vue';
+import ScrollIndicator from './components/ScrollIndicator.vue';
 
 export default {
   name: 'App',
   components: {
-    MsmLogo
-  }
+    MsmLogo,
+    Content,
+    ScrollIndicator,
+  },
 };
 </script>
 
@@ -24,5 +30,6 @@ body {
 
 * {
   box-sizing: border-box;
+  font-family: monospace;
 }
 </style>
