@@ -1,5 +1,10 @@
 <template>
   <section>
+    <a
+      class="github-link"
+      href="https://github.com/jargharg/brand-evolution-animations"
+      target="_blank"
+    >github repo</a>
     <MsmLogo />
     <ScrollIndicator />
     <Content />
@@ -31,5 +36,15 @@ body {
 * {
   box-sizing: border-box;
   font-family: monospace;
+}
+
+.github-link {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  padding: 1rem;
+  color: white;
+  mix-blend-mode: difference;
+  z-index: 100;
 }
 </style>

@@ -42,6 +42,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
+gsap.core.globals('ScrollTrigger', ScrollTrigger);
 
 export default {
   components: {
@@ -222,6 +223,7 @@ export default {
   &__section {
     width: 100vw;
     height: 100vh;
+    background: white;
   }
 }
 </style>
